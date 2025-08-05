@@ -32,6 +32,8 @@ def probar_guardar_tracking():
         print(f"   Estado: {datos_tracking.get('estado')}")
         print(f"   Destino: {datos_tracking.get('destino')}")
         print(f"   Dirección: {datos_tracking.get('direccion')}")
+        print(f"   Origen City: {datos_tracking.get('origen_city')}")  # ✅ NUEVO
+        print(f"   Destino City: {datos_tracking.get('destino_city')}")  # ✅ NUEVO
         
         # 3. Guardar tracking en la base de datos
         print(f"\n💾 Guardando tracking en la base de datos...")
@@ -39,7 +41,9 @@ def probar_guardar_tracking():
             usuario_id=usuario.id,
             codigo_tracking=codigo_tracking,
             estado=datos_tracking.get('estado'),
-            direccion=datos_tracking.get('direccion')
+            direccion=datos_tracking.get('direccion'),
+            origen_city=datos_tracking.get('origen_city'),  # ✅ NUEVO
+            destino_city=datos_tracking.get('destino_city')  # ✅ NUEVO
         )
         print(f"✅ Tracking guardado con ID: {tracking_db.id}")
         
@@ -53,6 +57,8 @@ def probar_guardar_tracking():
             print(f"   📦 Código: {tracking.codigo}")
             print(f"   📍 Estado: {tracking.estado}")
             print(f"   🏠 Dirección: {tracking.direccion}")
+            print(f"   🚀 Origen City: {tracking.origen_city}")  # ✅ NUEVO
+            print(f"   📍 Destino City: {tracking.destino_city}")  # ✅ NUEVO
             print(f"   ✅ Activo: {tracking.activo}")
             print()
             
@@ -77,6 +83,7 @@ def verificar_tabla_trackings():
             for tracking in trackings:
                 print(f"   ID: {tracking.id} | Usuario ID: {tracking.usuario_id} | Código: {tracking.codigo}")
                 print(f"   Estado: {tracking.estado} | Activo: {tracking.activo}")
+                print(f"   Origen: {tracking.origen_city} | Destino: {tracking.destino_city}")  # ✅ NUEVO
                 print()
         else:
             print("❌ La tabla trackings está vacía")

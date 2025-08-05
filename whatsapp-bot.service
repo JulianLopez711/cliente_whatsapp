@@ -1,0 +1,20 @@
+# Configuración sistemd para el bot de WhatsApp
+[Unit]
+Description=WhatsApp Bot Service
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/cliente_whatsapp
+Environment=PATH=/home/ubuntu/cliente_whatsapp/venv/bin
+ExecStart=/home/ubuntu/cliente_whatsapp/venv/bin/python app.py
+Restart=always
+RestartSec=10
+
+# Logs
+StandardOutput=file:/var/log/whatsapp_bot.log
+StandardError=file:/var/log/whatsapp_bot_error.log
+
+[Install]
+WantedBy=multi-user.target

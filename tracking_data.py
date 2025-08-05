@@ -25,7 +25,9 @@ def consultar_estado(tracking):
             customer_mobile_number,
             pais,
             nombre,
-            direccion
+            direccion,
+            Origen_City,
+            Destino_City
         FROM `datos-clientes-441216.Servicio_Cliente.Status`
         WHERE tracking_number = @tracking
         LIMIT 1
@@ -57,5 +59,6 @@ def consultar_estado(tracking):
         "pais": row.get("pais"),
         "nombre": row.get("nombre"),
         "direccion": row.get("direccion"),
-        # "origen": row.get("origen")  # Comentado hasta agregar campo en BigQuery
+        "origen_city": row.get("Origen_City"),  # ✅ NUEVO CAMPO
+        "destino_city": row.get("Destino_City"),  # ✅ NUEVO CAMPO
     }

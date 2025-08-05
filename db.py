@@ -35,6 +35,8 @@ class Tracking(Base):
     direccion = Column(String)
     fecha_entrega = Column(Date)
     activo = Column(Boolean, default=True)
+    origen_city = Column(String, nullable=True)  # ✅ NUEVO CAMPO
+    destino_city = Column(String, nullable=True)  # ✅ NUEVO CAMPO
 
     usuario = relationship("Usuario", back_populates="trackings")
     casos = relationship("Caso", back_populates="tracking")

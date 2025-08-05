@@ -131,11 +131,16 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                 # Guardar tracking en la base de datos
                 estado_paquete = datos.get("estado", "No disponible")
                 direccion = datos.get("direccion", "")
+                origen_city = datos.get("origen_city", "")
+                destino_city = datos.get("destino_city", "")
+                
                 crear_o_actualizar_tracking(
                     usuario_id=usuario.id,
                     codigo_tracking=tracking,
                     estado=estado_paquete,
-                    direccion=direccion
+                    direccion=direccion,
+                    origen_city=origen_city,
+                    destino_city=destino_city
                 )
                 
                 set_estado(numero, "MENU_PRINCIPAL")
@@ -194,10 +199,15 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                 
                 # Primeras condiciones: primary_client_id con país y FS - FLUJO CERRADO
                 if primary_client_id == 86 and pais != "Colombia" and fs is None:
+                    # Obtener origen y destino desde los datos
+                    origen_city = datos.get("origen_city", "Origen")
+                    destino_city = datos.get("destino_city", destino)
+                    
                     respuesta = f"""📦 *Estado de tu guía {tracking_code}*
 
                         {MENSAJE_TRANSITO_INTERNACIONAL}
-                        📍 *Destino:* {destino}
+                        🚀 *Origen:* {origen_city}
+                        📍 *Destino:* {destino_city}
                         📅 *Última actualización:* {fecha_formateada}
 
                         {nombre}, ¿te puedo ayudar en algo más?
@@ -208,10 +218,15 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                     return respuesta
                     
                 elif primary_client_id != 86 and pais == "Colombia" and fs is None:
+                    # Obtener origen y destino desde los datos
+                    origen_city = datos.get("origen_city", "Origen")
+                    destino_city = datos.get("destino_city", destino)
+                    
                     respuesta = f"""📦 *Estado de tu guía {tracking_code}*
 
                         {MENSAJE_TIENDA_NO_ENTREGADO}
-                        📍 *Destino:* {destino}
+                        � *Origen:* {origen_city}
+                        �📍 *Destino:* {destino_city}
                         📅 *Última actualización:* {fecha_formateada}
 
                         {nombre}, ¿te puedo ayudar en algo más?
@@ -222,10 +237,15 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                     return respuesta
                     
                 elif primary_client_id != 86 and pais != "Colombia" and fs is None:
+                    # Obtener origen y destino desde los datos
+                    origen_city = datos.get("origen_city", "Origen")
+                    destino_city = datos.get("destino_city", destino)
+                    
                     respuesta = f"""📦 *Estado de tu guía {tracking_code}*
 
                         {MENSAJE_TIENDA_NO_ENTREGADO}
-                        📍 *Destino:* {destino}
+                        � *Origen:* {origen_city}
+                        �📍 *Destino:* {destino_city}
                         📅 *Última actualización:* {fecha_formateada}
 
                         {nombre}, ¿te puedo ayudar en algo más?
@@ -237,18 +257,26 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                 
                 # Segundas condiciones: Estados específicos con traducción
                 elif estado_paquete == "130 - Contenerizado":
-                    mensaje_estado = f"🚢 El paquete se encuentra en tránsito de *{origen}* a *{destino}*."
+                    origen_city = datos.get("origen_city", "Origen")
+                    destino_city = datos.get("destino_city", destino)
+                    mensaje_estado = f"🚢 El paquete se encuentra en tránsito de *{origen_city}* a *{destino_city}*."
                 elif estado_paquete == "131 - Descontenerizado":
-                    mensaje_estado = f"✈️ Tu paquete arribó a *{destino}*."
+                    destino_city = datos.get("destino_city", destino)
+                    mensaje_estado = f"✈️ Tu paquete arribó a *{destino_city}*."
                 
                 # Condición por defecto: usar traducción de estado
                 else:
                     mensaje_estado = traducir_estado(estado_paquete)
                 
+                # Obtener origen y destino para mostrar en la respuesta final
+                origen_city = datos.get("origen_city", "Origen")
+                destino_city = datos.get("destino_city", destino)
+                
                 respuesta = f"""📦 *Estado de tu guía {tracking_code}*
 
                         {mensaje_estado}
-                        📍 *Destino:* {destino}
+                        🚀 *Origen:* {origen_city}
+                        📍 *Destino:* {destino_city}
                         📅 *Última actualización:* {fecha_formateada}
 
                         {nombre}, ¿te puedo ayudar en algo más?
@@ -412,9 +440,14 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
         if datos_tracking:
             estado_actual = datos_tracking.get("Actual_Normal_Status", "No disponible")
             transportadora = datos_tracking.get("Carrier", "No disponible")
+            origen_city = datos_tracking.get("origen_city", "No disponible")
+            destino_city = datos_tracking.get("destino_city", "No disponible")
+            
             cuerpo += f"""
 📦 *Estado del paquete:* {estado_actual}
 🚚 *Transportadora:* {transportadora}
+🚀 *Origen:* {origen_city}
+📍 *Destino:* {destino_city}
 """
 
         if drive_url:

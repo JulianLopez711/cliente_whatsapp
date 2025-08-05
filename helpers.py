@@ -49,7 +49,7 @@ def obtener_trackings_usuario(usuario_id, activo=True):
     finally:
         db.close()
 
-def crear_o_actualizar_tracking(usuario_id, codigo_tracking, estado=None, direccion=None, fecha_entrega=None):
+def crear_o_actualizar_tracking(usuario_id, codigo_tracking, estado=None, direccion=None, fecha_entrega=None, origen_city=None, destino_city=None):
     """
     Crea o actualiza un tracking en la base de datos
     """
@@ -70,6 +70,10 @@ def crear_o_actualizar_tracking(usuario_id, codigo_tracking, estado=None, direcc
                 tracking_existente.direccion = direccion
             if fecha_entrega:
                 tracking_existente.fecha_entrega = fecha_entrega
+            if origen_city:
+                tracking_existente.origen_city = origen_city
+            if destino_city:
+                tracking_existente.destino_city = destino_city
             db.commit()
             db.refresh(tracking_existente)
             return tracking_existente
@@ -81,6 +85,8 @@ def crear_o_actualizar_tracking(usuario_id, codigo_tracking, estado=None, direcc
                 estado=estado,
                 direccion=direccion,
                 fecha_entrega=fecha_entrega,
+                origen_city=origen_city,
+                destino_city=destino_city,
                 activo=True
             )
             db.add(nuevo_tracking)
