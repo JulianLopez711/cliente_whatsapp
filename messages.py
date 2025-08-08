@@ -258,3 +258,74 @@ ESTADOS_TRADUCIDOS = {
 "600": "✅ La devolución del paquete al centro de distribución ha sido completada"
 }
 
+# ===== MENSAJES ESPECÍFICOS POR PAÍS =====
+
+# Mensajes para Colombia
+MENSAJES_COLOMBIA = {
+    "bienvenida": "👋 ¡Hola! Bienvenido a X-Cargo Colombia.\nEstamos aquí para ayudarte.",
+    "devolucion": (
+        "🔄 *Atención a devoluciones - Colombia*\n\n"
+        "Para ayudarte con una devolución, comunícate con nuestros canales oficiales:\n\n"
+        "👥 WhatsApp: *316 198 7694*\n"
+        "✉️ Correo: *selfx@x-cargo.co*\n\n"
+        "🕒 *Horarios de atención:*\n"
+        "Lun a Jue: 8:00am – 1:00pm y 2:00pm – 5:00pm\n"
+        "Vie: 8:00am – 1:00pm y 2:00pm – 4:00pm\n"
+        "Sáb: 8:00am – 11:00am\n\n"
+        "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+    ),
+    "recogida_disponible": (
+        "🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina.*\n\n"
+        "📍 *Dirección:* Calle 26 # 69B-53, Bogotá\n"
+        "🕒 *Horarios:*\n"
+        "Lun a Vie: 8:00am – 5:00pm\n"
+        "Sáb: 8:00am – 12:00pm\n\n"
+        "📋 *Qué debes llevar:*\n"
+        "• Cédula de ciudadanía\n"
+        "• Número de guía: {tracking}\n\n"
+        "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+    ),
+    "tiempo_respuesta": "15 días hábiles",
+    "moneda": "COP",
+    "zona_horaria": "COT"
+}
+
+# Mensajes para Panamá
+MENSAJES_PANAMA = {
+    "bienvenida": "👋 ¡Hola! Bienvenido a X-Cargo Panamá.\nEstamos aquí para ayudarte.",
+    "devolucion": (
+        "🔄 *Atención a devoluciones - Panamá*\n\n"
+        "Para ayudarte con una devolución, comunícate con nuestros canales oficiales:\n\n"
+        "👥 WhatsApp: *+507 6XXX-XXXX*\n"
+        "✉️ Correo: *panama@x-cargo.co*\n\n"
+        "🕒 *Horarios de atención:*\n"
+        "Lun a Vie: 8:00am – 5:00pm\n"
+        "Sáb: 8:00am – 12:00pm\n\n"
+        "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+    ),
+    "recogida_disponible": (
+        "🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina.*\n\n"
+        "📍 *Dirección:* Vía España, Plaza Nueva York, Local XX, Ciudad de Panamá\n"
+        "🕒 *Horarios:*\n"
+        "Lun a Vie: 8:00am – 5:00pm\n"
+        "Sáb: 8:00am – 12:00pm\n\n"
+        "📋 *Qué debes llevar:*\n"
+        "• Cédula de identidad\n"
+        "• Número de guía: {tracking}\n\n"
+        "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+    ),
+    "tiempo_respuesta": "10 días hábiles",
+    "moneda": "PAB",
+    "zona_horaria": "EST"
+}
+
+def get_mensajes_pais(pais):
+    """
+    Obtiene los mensajes específicos según el país
+    """
+    if pais and pais.lower() == "panama":
+        return MENSAJES_PANAMA
+    else:
+        # Por defecto Colombia
+        return MENSAJES_COLOMBIA
+

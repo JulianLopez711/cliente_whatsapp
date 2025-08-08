@@ -7,10 +7,16 @@ from sqlalchemy.orm import sessionmaker, relationship
 # Cargar variables del entorno
 load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
+TICKETS_DATABASE_URL = os.getenv("TICKETS_DATABASE_URL", DATABASE_URL)  # URL de la base de datos central de tickets
 
-# Conexión
+# Conexión principal
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# Conexión para la base de datos central de tickets
+tickets_engine = create_engine(TICKETS_DATABASE_URL)
+TicketsSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=tickets_engine)
+
 Base = declarative_base()
 
 # Modelos
@@ -78,7 +84,35 @@ class Status(Base):
     creado_en = Column(DateTime, server_default=func.now())
 
 
+# Modelo para la tabla tickets de la base de datos central
+class Ticket(Base):
+    __tablename__ = "tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    asunto = Column(Text, nullable=False)
+    descripcion = Column(Text)
+    estado = Column(Text, nullable=False, default="abierto")
+    prioridad = Column(Text, nullable=False, default="media")
+    fecha_creacion = Column(DateTime, server_default=func.now())
+    fecha_actualizacion = Column(DateTime, server_default=func.now())
+    fecha_cierre = Column(DateTime)
+    sla_vencimiento = Column(DateTime)
+    solicitante_id = Column(Integer)
+    agente_id = Column(Integer)
+    cola_id = Column(Integer)
+    app_origen_id = Column(Integer)
+    canal = Column(Text, default="whatsapp")
+    ticket_padre_id = Column(Integer)
+    tipo_id = Column(Integer)
+    empresa_id = Column(Integer, nullable=False, default=1)  # Valor por defecto para X-Cargo
+
 
 # Crear las tablas
 def init_db():
+    """Crear tablas en la base de datos principal"""
     Base.metadata.create_all(bind=engine)
+
+def init_tickets_db():
+    """Crear tabla tickets en la base de datos central"""
+    # Solo crear la tabla tickets en la base central
+    Ticket.metadata.create_all(bind=tickets_engine)

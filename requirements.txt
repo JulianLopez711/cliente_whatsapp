@@ -8,4 +8,5 @@ google-auth-oauthlib
 requests
 Pillow
 sqlalchemy
+psycopg2-binary
 google-cloud-bigquery

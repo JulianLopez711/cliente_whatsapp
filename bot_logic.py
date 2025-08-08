@@ -6,7 +6,8 @@ from tracking_data import consultar_estado
 from state import (
     get_estado, set_estado, set_tracking, get_tracking,
     reset_usuario, set_nombre, get_nombre,
-    set_estado_temporal, get_estado_temporal
+    set_estado_temporal, get_estado_temporal,
+    set_pais, get_pais
 )
 from messages import (
     MENSAJE_BIENVENIDA,
@@ -35,10 +36,84 @@ from messages import (
     MENSAJE_OPCION_NO_DISPONIBLE,
     MENSAJE_RECOGIDA_NO_DISPONIBLE,
     MENSAJE_ERROR_GENERAL,
-    ESTADOS_TRADUCIDOS
+    ESTADOS_TRADUCIDOS,
+    get_mensajes_pais
 )
-from helpers import get_or_create_usuario, registrar_mensaje, crear_caso, crear_o_actualizar_tracking
+from helpers import get_or_create_usuario, registrar_mensaje, crear_caso, crear_o_actualizar_tracking, crear_ticket_central
 from drive import subir_a_drive
+
+def detectar_pais_desde_datos(datos):
+    """
+    Detecta el país desde los datos de BigQuery
+    """
+    if not datos:
+        return "Colombia"  # Por defecto
+        
+    pais = datos.get("pais", "").strip()
+    if pais.lower() in ["panama", "panamá"]:
+        return "panama"
+    else:
+        return "colombia"
+
+def aplicar_flujo_por_pais(pais, nombre, tracking_code, datos):
+    """
+    Aplica el flujo específico según el país detectado
+    """
+    mensajes_pais = get_mensajes_pais(pais)
+    
+    # Datos comunes
+    estado_paquete = datos.get("estado", "No disponible")
+    fecha_estado = datos.get("fecha_estado", "No disponible")
+    destino = datos.get("destino", "No disponible")
+    origen_city = datos.get("origen_city", "Origen")
+    destino_city = datos.get("destino_city", destino)
+    
+    # Formatear fecha
+    if fecha_estado and fecha_estado != "No disponible":
+        try:
+            if isinstance(fecha_estado, str):
+                fecha_formateada = fecha_estado
+            else:
+                fecha_formateada = fecha_estado.strftime("%d/%m/%Y %H:%M")
+        except:
+            fecha_formateada = str(fecha_estado)
+    else:
+        fecha_formateada = "No disponible"
+    
+    # Mensaje base personalizado por país
+    if pais == "panama":
+        emoji_bandera = "🇵🇦"
+        prefijo_pais = "Panamá"
+    else:
+        emoji_bandera = "🇨🇴"
+        prefijo_pais = "Colombia"
+    
+    respuesta = f"""{emoji_bandera} *Estado de tu guía {tracking_code} - {prefijo_pais}*
+
+📦 *Estado:* {traducir_estado(estado_paquete)}
+🚀 *Origen:* {origen_city}
+📍 *Destino:* {destino_city}
+📅 *Última actualización:* {fecha_formateada}
+
+{nombre}, ¿te puedo ayudar en algo más?
+1️⃣ Sí, volver al menú principal
+2️⃣ No, finalizar conversación"""
+    
+    return respuesta
+
+def get_mensaje_devolucion_por_pais(pais):
+    """
+    Obtiene el mensaje de devolución específico del país
+    """
+    mensajes_pais = get_mensajes_pais(pais)
+    return mensajes_pais["devolucion"]
+
+def get_mensaje_recogida_por_pais(pais, tracking_code):
+    """
+    Obtiene el mensaje de recogida específico del país
+    """
+    mensajes_pais = get_mensajes_pais(pais)
+    return mensajes_pais["recogida_disponible"].format(tracking=tracking_code)
 
 def es_saludo(mensaje):
     texto = mensaje.lower()
@@ -121,6 +196,10 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             tracking = mensaje
             datos = consultar_estado(tracking)
             if datos:
+                # Detectar y guardar país del usuario
+                pais_detectado = detectar_pais_desde_datos(datos)
+                set_pais(numero, pais_detectado)
+                
                 # Guardar tracking en memoria para la sesión actual
                 set_tracking(numero, tracking)
                 
@@ -164,8 +243,11 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             set_estado(numero, "MENU_ENTREGA")
             return MENSAJE_MENU_ENTREGA
         elif mensaje == "2":
+            # Usar país guardado en sesión o consultar datos si es necesario
+            pais_guardado = get_pais(numero)
+            mensaje_devolucion = get_mensaje_devolucion_por_pais(pais_guardado)
             set_estado(numero, "PREGUNTA_CONTINUAR")
-            return MENSAJE_DEVOLUCION
+            return mensaje_devolucion
         elif mensaje == "3":
             # Consultar estado de la guía
             tracking_code = get_tracking(numero)
@@ -173,115 +255,16 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             
             if datos:
                 nombre = get_nombre(numero) or ""
-                estado_paquete = datos.get("estado", "No disponible")
-                transportadora = datos.get("carrier", "No disponible")
-                destino = datos.get("destino", "No disponible")
-                fecha_estado = datos.get("fecha_estado", "No disponible")
-                primary_client_id = datos.get("primary_client_id")
-                pais = datos.get("pais")
-                fs = datos.get("fs")
-                origen = datos.get("origen", "origen no disponible")  # Valor por defecto
                 
-                # Formatear fecha si está disponible
-                if fecha_estado and fecha_estado != "No disponible":
-                    try:
-                        if isinstance(fecha_estado, str):
-                            fecha_formateada = fecha_estado
-                        else:
-                            fecha_formateada = fecha_estado.strftime("%d/%m/%Y %H:%M")
-                    except:
-                        fecha_formateada = str(fecha_estado)
+                # Usar país guardado en sesión o detectar desde datos
+                pais_guardado = get_pais(numero)
+                if not pais_guardado:
+                    pais_detectado = detectar_pais_desde_datos(datos)
+                    set_pais(numero, pais_detectado)
                 else:
-                    fecha_formateada = "No disponible"
+                    pais_detectado = pais_guardado
                 
-                # Lógica de mensajes personalizados según las condiciones
-                mensaje_estado = ""
-                
-                # Primeras condiciones: primary_client_id con país y FS - FLUJO CERRADO
-                if primary_client_id == 86 and pais != "Colombia" and fs is None:
-                    # Obtener origen y destino desde los datos
-                    origen_city = datos.get("origen_city", "Origen")
-                    destino_city = datos.get("destino_city", destino)
-                    
-                    respuesta = f"""📦 *Estado de tu guía {tracking_code}*
-
-                        {MENSAJE_TRANSITO_INTERNACIONAL}
-                        🚀 *Origen:* {origen_city}
-                        📍 *Destino:* {destino_city}
-                        📅 *Última actualización:* {fecha_formateada}
-
-                        {nombre}, ¿te puedo ayudar en algo más?
-                        1️⃣ Sí, volver al menú principal
-                        2️⃣ No, finalizar conversación"""
-                    
-                    set_estado(numero, "PREGUNTA_CONTINUAR")
-                    return respuesta
-                    
-                elif primary_client_id != 86 and pais == "Colombia" and fs is None:
-                    # Obtener origen y destino desde los datos
-                    origen_city = datos.get("origen_city", "Origen")
-                    destino_city = datos.get("destino_city", destino)
-                    
-                    respuesta = f"""📦 *Estado de tu guía {tracking_code}*
-
-                        {MENSAJE_TIENDA_NO_ENTREGADO}
-                        � *Origen:* {origen_city}
-                        �📍 *Destino:* {destino_city}
-                        📅 *Última actualización:* {fecha_formateada}
-
-                        {nombre}, ¿te puedo ayudar en algo más?
-                        1️⃣ Sí, volver al menú principal
-                        2️⃣ No, finalizar conversación"""
-                    
-                    set_estado(numero, "PREGUNTA_CONTINUAR")
-                    return respuesta
-                    
-                elif primary_client_id != 86 and pais != "Colombia" and fs is None:
-                    # Obtener origen y destino desde los datos
-                    origen_city = datos.get("origen_city", "Origen")
-                    destino_city = datos.get("destino_city", destino)
-                    
-                    respuesta = f"""📦 *Estado de tu guía {tracking_code}*
-
-                        {MENSAJE_TIENDA_NO_ENTREGADO}
-                        � *Origen:* {origen_city}
-                        �📍 *Destino:* {destino_city}
-                        📅 *Última actualización:* {fecha_formateada}
-
-                        {nombre}, ¿te puedo ayudar en algo más?
-                        1️⃣ Sí, volver al menú principal
-                        2️⃣ No, finalizar conversación"""
-                    
-                    set_estado(numero, "PREGUNTA_CONTINUAR")
-                    return respuesta
-                
-                # Segundas condiciones: Estados específicos con traducción
-                elif estado_paquete == "130 - Contenerizado":
-                    origen_city = datos.get("origen_city", "Origen")
-                    destino_city = datos.get("destino_city", destino)
-                    mensaje_estado = f"🚢 El paquete se encuentra en tránsito de *{origen_city}* a *{destino_city}*."
-                elif estado_paquete == "131 - Descontenerizado":
-                    destino_city = datos.get("destino_city", destino)
-                    mensaje_estado = f"✈️ Tu paquete arribó a *{destino_city}*."
-                
-                # Condición por defecto: usar traducción de estado
-                else:
-                    mensaje_estado = traducir_estado(estado_paquete)
-                
-                # Obtener origen y destino para mostrar en la respuesta final
-                origen_city = datos.get("origen_city", "Origen")
-                destino_city = datos.get("destino_city", destino)
-                
-                respuesta = f"""📦 *Estado de tu guía {tracking_code}*
-
-                        {mensaje_estado}
-                        🚀 *Origen:* {origen_city}
-                        📍 *Destino:* {destino_city}
-                        📅 *Última actualización:* {fecha_formateada}
-
-                        {nombre}, ¿te puedo ayudar en algo más?
-                        1️⃣ Sí, volver al menú principal
-                        2️⃣ No, finalizar conversación"""
+                respuesta = aplicar_flujo_por_pais(pais_detectado, nombre, tracking_code, datos)
                 
                 set_estado(numero, "PREGUNTA_CONTINUAR")
                 return respuesta
@@ -314,11 +297,14 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             set_estado(numero, "PREGUNTA_CONTINUAR")
             return MENSAJE_CAMBIO_DATOS
         elif mensaje == "3":
-            # Deseo recoger mi pedido - Solo disponible para Panamá
-            pais = datos.get("pais", "").lower()
-            if pais == "panama" or pais == "panamá":
+            # Deseo recoger mi pedido - Flujo por país
+            tracking_code = get_tracking(numero)
+            pais_guardado = get_pais(numero)
+            
+            if pais_guardado == "panama":
+                mensaje_recogida = get_mensaje_recogida_por_pais(pais_guardado, tracking_code)
                 set_estado(numero, "PREGUNTA_CONTINUAR")
-                return MENSAJE_RECOGIDA_PEDIDO
+                return mensaje_recogida
             else:
                 set_estado(numero, "PREGUNTA_CONTINUAR")
                 return MENSAJE_RECOGIDA_NO_DISPONIBLE
@@ -418,6 +404,7 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
 def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url=None, imagen_guardada=None, datos_tracking=None):
     """
     Envía un correo de notificación cuando se crea un nuevo caso
+    y también crea un ticket en la base de datos central
     """
     try:
         asunto = f"[{tipo_caso.upper()}] Caso automático - {tracking_code}"
@@ -462,7 +449,27 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
 
         enviar_correo(asunto, cuerpo, adjuntos=adjuntos)
 
-        print(f"✅ Correo enviado para caso: {tipo_caso} - {tracking_code}")
+        # 🎫 Crear ticket en la base de datos central
+        determinar_prioridad_caso = {
+            "pedido no entregado": "alta",
+            "mala atención": "media", 
+            "cobro no reconocido": "alta",
+            "pedido incompleto": "alta"
+        }
+        
+        prioridad = determinar_prioridad_caso.get(tipo_caso, "media")
+        
+        crear_ticket_central(
+            asunto=asunto,
+            descripcion=descripcion,
+            usuario_nombre=usuario.nombre,
+            usuario_telefono=usuario.numero,
+            tracking_code=tracking_code,
+            tipo_caso=tipo_caso,
+            prioridad=prioridad
+        )
+
+        print(f"✅ Correo enviado y ticket creado para caso: {tipo_caso} - {tracking_code}")
 
     except Exception as e:
         print(f"❌ Error al enviar correo del caso: {e}")
