@@ -22,6 +22,11 @@ def crear_html_personalizado(cuerpo):
     import re
     cuerpo_formateado = re.sub(r'\*(.*?)\*', r'<strong>\1</strong>', cuerpo_formateado)
     
+    # Agregar estilos especiales para las secciones
+    cuerpo_formateado = re.sub(r'📄 <strong>(.*?)</strong>', r'<div style="background:#e3f2fd;padding:15px;margin:10px 0;border-left:4px solid #2196f3;border-radius:5px;">📄 <strong>\1</strong></div>', cuerpo_formateado)
+    cuerpo_formateado = re.sub(r'📦 <strong>(.*?)</strong>', r'<div style="background:#f3e5f5;padding:15px;margin:10px 0;border-left:4px solid #9c27b0;border-radius:5px;">📦 <strong>\1</strong></div>', cuerpo_formateado)
+    cuerpo_formateado = re.sub(r'📌 <strong>(.*?)</strong>', r'<div style="background:#fff3e0;padding:15px;margin:10px 0;border-left:4px solid #ff9800;border-radius:5px;">📌 <strong>\1</strong></div>', cuerpo_formateado)
+    
     html_template = f"""
     <!DOCTYPE html>
     <html>
@@ -29,24 +34,28 @@ def crear_html_personalizado(cuerpo):
         <meta charset="UTF-8">
         <style>
             body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }}
-            .container {{ max-width: 600px; margin: 0 auto; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            .container {{ max-width: 700px; margin: 0 auto; background: white; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
             .header {{ background: linear-gradient(135deg, #1C4148, #0F2A2E); color: white; padding: 30px; text-align: center; }}
-            .content {{ padding: 40px; font-size: 16px; white-space: pre-line; }}
+            .content {{ padding: 40px; font-size: 16px; }}
+            .tracking-info {{ background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }}
             .footer {{ background: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 14px; }}
             a {{ color: #1C4148; }}
+            .highlight {{ background: #fffbf0; padding: 15px; border-left: 4px solid #ffc107; margin: 10px 0; border-radius: 5px; }}
+            .emoji {{ font-size: 18px; }}
         </style>
     </head>
     <body>
         <div class="container">
             <div class="header">
                 <h1>🤖 X-Cargo Bot</h1>
+                <p>Nuevo Caso Reportado</p>
             </div>
             <div class="content">
                 {cuerpo_formateado}
             </div>
             <div class="footer">
                 <p><strong>X-Cargo</strong> - Sistema Automático</p>
-                <p>📧 selfx@x-cargo.co</p>
+                <p>📧 selfx@x-cargo.co | 🌐 Portal de Soporte</p>
             </div>
         </div>
     </body>

@@ -407,6 +407,12 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
     y también crea un ticket en la base de datos central
     """
     try:
+        from helpers import obtener_datos_tracking
+        
+        # Obtener datos del tracking si no se proporcionan
+        if not datos_tracking:
+            datos_tracking = obtener_datos_tracking(tracking_code)
+        
         asunto = f"[{tipo_caso.upper()}] Caso automático - {tracking_code}"
 
         cuerpo = f"""
@@ -417,24 +423,19 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
 • 📱 Teléfono: {usuario.numero}
 • 🧾 Tracking: {tracking_code}
 
-📌 *Tipo de caso:* {tipo_caso.title()}
-📝 *Descripción del cliente:* {descripcion}
+� *Información del envío:*
+• � Carrier: {datos_tracking.get('carrier', 'No disponible')}
+• 🌍 País: {datos_tracking.get('pais', 'No disponible')}
+• 📊 Estado Actual: {datos_tracking.get('estado_actual', 'No disponible')}
+• 🏙️ Ciudad Origen: {datos_tracking.get('origen_city', 'No disponible')}
+• 🏙️ Ciudad Destino: {datos_tracking.get('destino_city', 'No disponible')}
+• 📍 Dirección: {datos_tracking.get('destino', 'No disponible')}
 
-🕒 *Fecha de creación:* {datetime.now().strftime('%Y-%m-%d %H:%M')}
-"""
+� *Detalles del caso:*
+• Tipo de caso: {tipo_caso.title()}
+• � Descripción del cliente: {descripcion}
 
-        # 👉 Agregar info de tracking si está disponible
-        if datos_tracking:
-            estado_actual = datos_tracking.get("Actual_Normal_Status", "No disponible")
-            transportadora = datos_tracking.get("Carrier", "No disponible")
-            origen_city = datos_tracking.get("origen_city", "No disponible")
-            destino_city = datos_tracking.get("destino_city", "No disponible")
-            
-            cuerpo += f"""
-📦 *Estado del paquete:* {estado_actual}
-🚚 *Transportadora:* {transportadora}
-🚀 *Origen:* {origen_city}
-📍 *Destino:* {destino_city}
+� *Fecha de creación:* {datetime.now().strftime('%d/%m/%Y %H:%M')}
 """
 
         if drive_url:
