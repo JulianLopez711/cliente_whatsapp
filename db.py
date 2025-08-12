@@ -107,6 +107,21 @@ class Ticket(Base):
     empresa_id = Column(Integer, nullable=False, default=1)  # Valor por defecto para X-Cargo
 
 
+# Modelo para la relación entre tickets y WhatsApp
+class TicketWhatsapp(Base):
+    __tablename__ = "tickets_whatsapp"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(Integer, nullable=False)
+    usuario_numero = Column(String, nullable=False)
+    usuario_nombre = Column(String)
+    tracking_codigo = Column(String)
+    caso_id = Column(Integer)
+    estado_ticket = Column(String, default="Abierto")
+    notificado_cierre = Column(Boolean, default=False)
+    cerrado_en = Column(DateTime)
+
+
 # Crear las tablas
 def init_db():
     """Crear tablas en la base de datos principal"""

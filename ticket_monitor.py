@@ -73,9 +73,8 @@ _{comentario or 'Tu caso ha sido atendido por nuestro equipo. Si tienes dudas, c
 
 👤 Atendido por: {agente_nombre or 'Agente de Soporte'}
 
-✅ Tu solicitud ha sido resuelta satisfactoriamente.
 
-*Gracias por usar X-Cargo* 🚚
+*Gracias * 🚚
                 """.strip()
                 enviar_notificacion_whatsapp(ticket_whatsapp.usuario_numero, mensaje)
                 ticket_whatsapp.notificado_cierre = True

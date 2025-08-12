@@ -351,11 +351,23 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                 imagen_url=None
             )
 
-            # Enviar correo de notificación
-            enviar_correo_caso(usuario_actualizado, tracking_code, tipo_caso, descripcion, None)
+            # Enviar correo de notificación y obtener ticket
+            ticket = enviar_correo_caso(usuario_actualizado, tracking_code, tipo_caso, descripcion, None)
 
             set_estado(numero, "PREGUNTA_CONTINUAR")
-            return MENSAJE_CASO_CONFIRMADO
+            if ticket and hasattr(ticket, 'id'):
+                return (
+                    f"✅ ¡Gracias! Tu caso ha sido registrado correctamente.\n"
+                    f"📌 Número de caso: *#{ticket.id}*\n"
+                    "Nuestro equipo lo revisará y te contactará en un máximo de *15 días hábiles*.\n\n"
+                    "¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+                )
+            else:
+                return (
+                    "✅ ¡Gracias! Tu caso ha sido registrado correctamente.\n"
+                    "📌 Nuestro equipo lo revisará y te contactará en un máximo de *15 días hábiles*.\n\n"
+                    "¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+                )
         else:
             return MENSAJE_OPCION_IMAGEN_INVALIDA
 
@@ -460,7 +472,7 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
         
         prioridad = determinar_prioridad_caso.get(tipo_caso, "media")
         
-        crear_ticket_central(
+        ticket = crear_ticket_central(
             asunto=asunto,
             descripcion=descripcion,
             usuario_nombre=usuario.nombre,
@@ -469,9 +481,9 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
             tipo_caso=tipo_caso,
             prioridad=prioridad
         )
-
         print(f"✅ Correo enviado y ticket creado para caso: {tipo_caso} - {tracking_code}")
-
+        return ticket
     except Exception as e:
         print(f"❌ Error al enviar correo del caso: {e}")
+        return None
 
