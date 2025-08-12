@@ -174,7 +174,7 @@ ESTADOS_TRADUCIDOS = {
 "126": "El paquete ha sido documentado en el sistema",
 "127": "El paquete fue recolectado para su devolución.",
 "130": "🔄 El contenedor ha sido cerrado",
-"131": "✈️ El contenedor ha sido abierto",
+"131": "✈️ El contenedor ha sido Abierto",
 "132": "El paquete no arribó en el contenedor",
 "133": "✈️ El paquete arribó en un contenedor sin haber sido registrado",
 "134": "Guía finalizada con un proceso de devolución asociado.",

@@ -335,7 +335,7 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
             """), {
                 'asunto': asunto,
                 'descripcion': descripcion_completa,
-                'estado': 'abierto',
+                'estado': 'Abierto',
                 'prioridad': prioridad,
                 'canal': 'whatsapp',
                 'cola_id': COLA_ID,
@@ -353,7 +353,7 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
             print(f"   Cola: {NOMBRE_COLA} (ID: {ticket_info[2]})")
             print(f"   Agente: ID {ticket_info[3]}")
             print(f"   Solicitante: selfx@x-cargo.co (ID: {ticket_info[4]})")
-            print(f"   Estado: abierto")
+            print(f"   Estado: Abierto")
             print(f"   Prioridad: {prioridad}")
             print(f"   País: {pais.title()}")
             
@@ -365,13 +365,45 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
                     self.cola_id = cola_id
                     self.agente_id = agente_id
                     self.solicitante_id = solicitante_id
-                    self.estado = "abierto"
+                    self.estado = "Abierto"
                     self.prioridad = prioridad
                     self.canal = "whatsapp"
-            
-            return TicketResult(ticket_info[0], ticket_info[1], ticket_info[2], ticket_info[3], ticket_info[4])
+            ticket_result = TicketResult(ticket_info[0], ticket_info[1], ticket_info[2], ticket_info[3], ticket_info[4])
+            # Registrar la relación para notificaciones si hay número de usuario
+            if ticket_result and usuario_telefono:
+                registrar_ticket_whatsapp(
+                    ticket_id=ticket_result.id,
+                    usuario_numero=usuario_telefono,
+                    usuario_nombre=usuario_nombre,
+                    tracking_codigo=tracking_code
+                )
+            return ticket_result
         
     except Exception as e:
         print(f"❌ Error al crear ticket en base central: {e}")
         return None
+
+def registrar_ticket_whatsapp(ticket_id, usuario_numero, usuario_nombre=None, tracking_codigo=None, caso_id=None):
+    """Registra la relación ticket-whatsapp para notificaciones"""
+    db = SessionLocal()
+    try:
+        from db import TicketWhatsapp
+        ticket_whatsapp = TicketWhatsapp(
+            ticket_id=ticket_id,
+            usuario_numero=usuario_numero,
+            usuario_nombre=usuario_nombre,
+            tracking_codigo=tracking_codigo,
+            caso_id=caso_id,
+            estado_ticket="Abierto"
+        )
+        db.add(ticket_whatsapp)
+        db.commit()
+        db.refresh(ticket_whatsapp)
+        print(f"✅ Relación ticket-whatsapp registrada: Ticket {ticket_id} → {usuario_numero}")
+        return ticket_whatsapp
+    except Exception as e:
+        print(f"❌ Error registrando relación ticket-whatsapp: {e}")
+        return None
+    finally:
+        db.close()
 
