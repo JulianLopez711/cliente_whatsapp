@@ -301,8 +301,8 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                 depto_destino = None
                 
                 if datos_tracking:
-                    # Buscar el departamento en los datos del tracking
-                    depto_destino = datos_tracking.get('destino_city') or datos_tracking.get('destino')
+                    # Usar el campo correcto depto_destino de la base de datos
+                    depto_destino = datos_tracking.get('depto_destino')
                 
                 mensaje_recogida = get_mensaje_recogida_panama(depto_destino, tracking_code)
                 set_estado(numero, "PREGUNTA_CONTINUAR")
