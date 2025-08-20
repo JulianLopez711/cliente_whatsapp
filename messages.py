@@ -402,9 +402,19 @@ def get_mensaje_recogida_panama(depto_destino, tracking):
     """
     Genera el mensaje de recogida específico según el departamento de Panamá
     """
+    # Si no hay departamento específico, usar oficina principal de Panamá
     if not depto_destino:
-        # Si no hay departamento, usar mensaje por defecto
-        return MENSAJES_PANAMA["recogida_disponible"].format(tracking=tracking)
+        oficina_principal = OFICINAS_PANAMA["panama"]
+        return (
+            f"🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina principal.*\n\n"
+            f"📍 *Dirección:* {oficina_principal['direccion']}\n"
+            f"🕒 *Horarios:*\n{oficina_principal['horarios']}\n"
+            f"📞 *Teléfono:* {oficina_principal['telefono']}\n\n"
+            f"📋 *Qué debes llevar:*\n"
+            f"• Cédula de identidad\n"
+            f"• Número de guía: {tracking}\n\n"
+            f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+        )
     
     depto_key = depto_destino.lower().strip()
     
@@ -436,6 +446,17 @@ def get_mensaje_recogida_panama(depto_destino, tracking):
                 f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
             )
     else:
-        # Mensaje por defecto si no se encuentra el departamento
-        return MENSAJES_PANAMA["recogida_disponible"].format(tracking=tracking)
+        # Si no se encuentra el departamento específico, usar oficina principal de Panamá
+        oficina_principal = OFICINAS_PANAMA["panama"]
+        return (
+            f"🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina principal.*\n\n"
+            f"📍 *Dirección:* {oficina_principal['direccion']}\n"
+            f"🕒 *Horarios:*\n{oficina_principal['horarios']}\n"
+            f"📞 *Teléfono:* {oficina_principal['telefono']}\n\n"
+            f"📋 *Qué debes llevar:*\n"
+            f"• Cédula de identidad\n"
+            f"• Número de guía: {tracking}\n\n"
+            f"📌 *Nota:* Si necesitas recoger en otra ubicación, contacta al teléfono indicado.\n\n"
+            f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+        )
 
