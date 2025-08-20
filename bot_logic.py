@@ -40,7 +40,8 @@ from messages import (
     ESTADOS_TRADUCIDOS,
     get_mensajes_pais,
     get_mensaje_recogida_panama,
-    get_mensaje_recogida_por_pais
+    get_mensaje_recogida_por_pais,
+    get_mensaje_devolucion_por_pais
 )
 from helpers import get_or_create_usuario, registrar_mensaje, crear_caso, crear_o_actualizar_tracking, crear_ticket_central
 from drive import subir_a_drive
@@ -70,6 +71,13 @@ def aplicar_flujo_por_pais(pais, nombre, tracking_code, datos):
     destino = datos.get("destino", "No disponible")
     origen_city = datos.get("origen_city", "Origen")
     destino_city = datos.get("destino_city", destino)
+    depto_destino = datos.get("depto_destino", "")
+    
+    # Verificar si el estado indica devolución
+    estado_lower = str(estado_paquete).lower() if estado_paquete else ""
+    if "devolucion" in estado_lower or "devolución" in estado_lower:
+        # Si hay devolución, mostrar mensaje dinámico según país y departamento
+        return get_mensaje_devolucion_por_pais(pais, depto_destino)
     
     # Formatear fecha
     if fecha_estado and fecha_estado != "No disponible":
@@ -103,13 +111,6 @@ def aplicar_flujo_por_pais(pais, nombre, tracking_code, datos):
 2️⃣ No, finalizar conversación"""
     
     return respuesta
-
-def get_mensaje_devolucion_por_pais(pais):
-    """
-    Obtiene el mensaje de devolución específico del país
-    """
-    mensajes_pais = get_mensajes_pais(pais)
-    return mensajes_pais["devolucion"]
 
 def es_saludo(mensaje):
     texto = mensaje.lower()

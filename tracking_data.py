@@ -59,6 +59,6 @@ def consultar_estado(tracking):
         "pais": row.get("pais"),
         "nombre": row.get("nombre"),
         "direccion": row.get("direccion"),
-        "origen_city": row.get("Origen_City"),  # ✅ NUEVO CAMPO
-        "destino_city": row.get("Destino_City"),  # ✅ NUEVO CAMPO
+        "origen_city": row.get("Origen_City"),  
+        "destino_city": row.get("Destino_City"),  
     }
