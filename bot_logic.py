@@ -21,6 +21,7 @@ from messages import (
     MENSAJE_PEDIDO_INCOMPLETO,
     MENSAJE_DEVOLUCION,
     MENSAJE_MENU_ENTREGA,
+    MENSAJE_MENU_RECOLECCION,
     MENSAJE_ESPERA_AGENTE,
     MENSAJE_PEDIR_DESCRIPCION,
     MENSAJE_PREGUNTAR_EVIDENCIA,
@@ -37,7 +38,8 @@ from messages import (
     MENSAJE_RECOGIDA_NO_DISPONIBLE,
     MENSAJE_ERROR_GENERAL,
     ESTADOS_TRADUCIDOS,
-    get_mensajes_pais
+    get_mensajes_pais,
+    get_mensaje_recogida_panama
 )
 from helpers import get_or_create_usuario, registrar_mensaje, crear_caso, crear_o_actualizar_tracking, crear_ticket_central
 from drive import subir_a_drive
@@ -227,7 +229,7 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                     f"✅ ¡Gracias {nombre}! Número de guía registrado correctamente.\n\n"
                     "Selecciona la opción que deseas consultar:\n"
                     "1️⃣ Tengo una novedad con una entrega\n"
-                    "2️⃣ Tengo una novedad con una devolución\n"
+                    "2️⃣ Tengo una novedad con una recolección\n"
                     "3️⃣ Consultar estado de mi guía\n\n"
                 )
             else:
@@ -243,11 +245,8 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             set_estado(numero, "MENU_ENTREGA")
             return MENSAJE_MENU_ENTREGA
         elif mensaje == "2":
-            # Usar país guardado en sesión o consultar datos si es necesario
-            pais_guardado = get_pais(numero)
-            mensaje_devolucion = get_mensaje_devolucion_por_pais(pais_guardado)
-            set_estado(numero, "PREGUNTA_CONTINUAR")
-            return mensaje_devolucion
+            set_estado(numero, "MENU_RECOLECCION")
+            return MENSAJE_MENU_RECOLECCION
         elif mensaje == "3":
             # Consultar estado de la guía
             tracking_code = get_tracking(numero)
@@ -302,7 +301,16 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             pais_guardado = get_pais(numero)
             
             if pais_guardado == "panama":
-                mensaje_recogida = get_mensaje_recogida_por_pais(pais_guardado, tracking_code)
+                # Obtener datos del tracking para conseguir el departamento de destino
+                from tracking_data import consultar_estado
+                datos_tracking = consultar_estado(tracking_code)
+                depto_destino = None
+                
+                if datos_tracking:
+                    # Buscar el departamento en los datos del tracking
+                    depto_destino = datos_tracking.get('destino_city') or datos_tracking.get('destino')
+                
+                mensaje_recogida = get_mensaje_recogida_panama(depto_destino, tracking_code)
                 set_estado(numero, "PREGUNTA_CONTINUAR")
                 return mensaje_recogida
             else:
@@ -314,6 +322,46 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             tipo_caso = "cobro no reconocido"
         elif mensaje == "6":
             tipo_caso = "pedido incompleto"
+        else:
+            return MENSAJE_OPCION_NO_DISPONIBLE
+
+        # Solo continúa con el flujo guiado si se seleccionó una opción que requiere caso
+        if tipo_caso:
+            set_estado_temporal(numero, "tipo_caso", tipo_caso)
+            set_estado(numero, "DESCRIBIR_CASO")
+            return MENSAJE_PEDIR_DESCRIPCION
+
+    elif estado == "MENU_RECOLECCION":
+        tracking_code = get_tracking(numero)
+        datos = consultar_estado(tracking_code)
+        if not datos:
+            set_estado(numero, "ESPERANDO_TRACKING")
+            return (
+                f"❗ No encontramos información con el número de guía *{tracking_code}*.\n"
+                "Por favor verifica que esté escrito correctamente.\n\n"
+                "📦 Ingresa nuevamente tu número de guía para continuar."
+            )
+
+        tipo_caso = None
+        if mensaje == "1":
+            tipo_caso = "recolección no realizada"
+        elif mensaje == "2":
+            # Cambiar datos de recolección - No se puede hacer por este canal
+            set_estado(numero, "PREGUNTA_CONTINUAR")
+            return (
+                "✏️ Entendemos que a veces necesitas actualizar los datos de recolección, pero no podemos hacer estos cambios desde este canal.\n\n"
+                "👉 Por favor contacta directamente con el servicio que programó la recolección o llama a nuestro centro de atención.\n\n"
+                "😊 Si necesitas ayuda, estoy aquí para orientarte.\n\n"
+                "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+            )
+        elif mensaje == "3":
+            tipo_caso = "reprogramar recolección"
+        elif mensaje == "4":
+            tipo_caso = "mala atención del recolector"
+        elif mensaje == "5":
+            tipo_caso = "cobro no reconocido en recolección"
+        elif mensaje == "6":
+            tipo_caso = "problema con empaque"
         else:
             return MENSAJE_OPCION_NO_DISPONIBLE
 
@@ -428,27 +476,27 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
         asunto = f"[{tipo_caso.upper()}] Caso automático - {tracking_code}"
 
         cuerpo = f"""
-🛑 *Nuevo caso reportado automáticamente desde WhatsApp*
+                    🛑 *Nuevo caso reportado automáticamente desde WhatsApp*
 
-📄 *Datos del cliente:*
-• 👤 Nombre: {usuario.nombre or 'No disponible'}
-• 📱 Teléfono: {usuario.numero}
-• 🧾 Tracking: {tracking_code}
+                    📄 *Datos del cliente:*
+                    • 👤 Nombre: {usuario.nombre or 'No disponible'}
+                    • 📱 Teléfono: {usuario.numero}
+                    • 🧾 Tracking: {tracking_code}
 
-� *Información del envío:*
-• � Carrier: {datos_tracking.get('carrier', 'No disponible')}
-• 🌍 País: {datos_tracking.get('pais', 'No disponible')}
-• 📊 Estado Actual: {datos_tracking.get('estado_actual', 'No disponible')}
-• 🏙️ Ciudad Origen: {datos_tracking.get('origen_city', 'No disponible')}
-• 🏙️ Ciudad Destino: {datos_tracking.get('destino_city', 'No disponible')}
-• 📍 Dirección: {datos_tracking.get('destino', 'No disponible')}
+                    � *Información del envío:*
+                    • � Carrier: {datos_tracking.get('carrier', 'No disponible')}
+                    • 🌍 País: {datos_tracking.get('pais', 'No disponible')}
+                    • 📊 Estado Actual: {datos_tracking.get('estado_actual', 'No disponible')}
+                    • 🏙️ Ciudad Origen: {datos_tracking.get('origen_city', 'No disponible')}
+                    • 🏙️ Ciudad Destino: {datos_tracking.get('destino_city', 'No disponible')}
+                    • 📍 Dirección: {datos_tracking.get('destino', 'No disponible')}
 
-� *Detalles del caso:*
-• Tipo de caso: {tipo_caso.title()}
-• � Descripción del cliente: {descripcion}
+                    � *Detalles del caso:*
+                    • Tipo de caso: {tipo_caso.title()}
+                    • � Descripción del cliente: {descripcion}
 
-� *Fecha de creación:* {datetime.now().strftime('%d/%m/%Y %H:%M')}
-"""
+                    � *Fecha de creación:* {datetime.now().strftime('%d/%m/%Y %H:%M')}
+                    """
 
         if drive_url:
             cuerpo += f"\n🔗 *Evidencia adjunta:* {drive_url}"
@@ -467,7 +515,12 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
             "pedido no entregado": "alta",
             "mala atención": "media", 
             "cobro no reconocido": "alta",
-            "pedido incompleto": "alta"
+            "pedido incompleto": "alta",
+            "recolección no realizada": "alta",
+            "reprogramar recolección": "media",
+            "mala atención del recolector": "media",
+            "cobro no reconocido en recolección": "alta",
+            "problema con empaque": "media"
         }
         
         prioridad = determinar_prioridad_caso.get(tipo_caso, "media")

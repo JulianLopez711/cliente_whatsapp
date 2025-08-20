@@ -56,6 +56,16 @@ MENSAJE_MENU_ENTREGA = (
     "6️⃣ *Pedido incompleto*\nFaltan productos o partes del envío. 📦\n\n"
 )
 
+MENSAJE_MENU_RECOLECCION = (
+    "📦 *Selecciona una novedad con tu recolección:*\n\n"
+    "1️⃣ *No recolectaron mi paquete*\nProgramaron la recolección pero no vinieron. 🚚\n\n"
+    "2️⃣ *Cambiar datos de recolección*\nModificar dirección, horario o contacto. ✏️\n\n"
+    "3️⃣ *Reprogramar recolección*\nCambiar fecha u horario de la recolección. 📅\n\n"
+    "4️⃣ *Mala atención del recolector*\nReportar comportamiento inadecuado. 😠\n\n"
+    "5️⃣ *Me cobraron la recolección*\nSe te cobró por algo que no debía. 💰\n\n"
+    "6️⃣ *Problema con el empaque*\nEl recolector reportó problemas con el paquete. 📦\n\n"
+)
+
 MENSAJE_DEVOLUCION = (
     "🔄 *Atención a devoluciones*\n\n"
     "Para ayudarte con una devolución, comunícate con nuestros canales oficiales:\n\n"
@@ -118,7 +128,7 @@ MENSAJE_VOLVER_MENU = (
     "👋 Volviendo al menú principal...\n\n"
     "Selecciona la opción que deseas consultar:\n"
     "1️⃣ Tengo una novedad con una entrega\n"
-    "2️⃣ Tengo una novedad con una devolución\n"
+    "2️⃣ Tengo una novedad con una recolección\n"
     "3️⃣ Consultar estado de mi guía\n\n"
 )
 
@@ -290,6 +300,65 @@ MENSAJES_COLOMBIA = {
     "zona_horaria": "COT"
 }
 
+# Información de oficinas por departamento en Panamá
+OFICINAS_PANAMA = {
+    "colon": {
+        "direccion": "Calle primera melendez multi 9 17 b Colón",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm\nSáb: 8:00am – 12:00pm",
+        "telefono": "+507-698-97486"
+    },
+    "veraguas": {
+        "direccion": "Plaza kevin las palmeras local 3",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm\nSáb: 8:00am – 11:00am",
+        "telefono": "+507-764-739746"
+    },
+    "los santos": {
+        "direccion": "La arena de Chitre casa B2-67  ",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm",
+        "telefono": "+507-679-89432"
+    },
+    "comarca ngobe bugle": {
+        "direccion": "Darién, entrando por santa fe, después del hotel guacamaya, frente a la iglesia bautista.Local Compucell",
+        "horarios": "Contactar para coordinar",
+        "telefono": "+507-617-58530"
+    },
+    "cocle": {
+        "direccion": "La angostura Penonome vía la pintada",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm",
+        "telefono": "+507-635-91486"
+    },
+    "herrera": {
+        "direccion": "La arena de Chitre casa B2-67 ",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm",
+        "telefono": "+507-679-89432"
+    },
+    "darien": {
+        "direccion": "Darién, entrando por santa fe, después del hotel guacamaya, frente a la iglesia bautista.Local Compucell",
+        "horarios": "Contactar para coordinar",
+        "telefono": "+507-617-58530"
+    },
+    "panama oeste": {
+        "direccion": "La Chorrera Urb. Quintas del Pacífico, Cll4, L38",
+        "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
+        "telefono": "+507-675-73416"
+    },
+    "bocas del toro": {
+        "direccion": "Av, 17 de abril. Finca 12, Changuinola, Bocas del toro",
+        "horarios": "Lun a Vie: 8:00am – 4:00pm",
+        "telefono": "+507-691-92027"
+    },
+    "chiriqui": {
+        "direccion": " David, Villa Patricia, Primera entrada mano izquiera, luego mano izquiera, despues mano derecha, casa 80",
+        "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
+        "telefono": "+507-675-73416"
+    },
+    "panama": {
+        "direccion": "PARQUE LEFEVRE, CALLE 14, GALERA 103- PANAMÁ",
+        "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
+        "telefono": "+507-675-73416"
+    }
+}
+
 # Mensajes para Panamá
 MENSAJES_PANAMA = {
     "bienvenida": "👋 ¡Hola! Bienvenido a X-Cargo Panamá.\nEstamos aquí para ayudarte.",
@@ -328,4 +397,45 @@ def get_mensajes_pais(pais):
     else:
         # Por defecto Colombia
         return MENSAJES_COLOMBIA
+
+def get_mensaje_recogida_panama(depto_destino, tracking):
+    """
+    Genera el mensaje de recogida específico según el departamento de Panamá
+    """
+    if not depto_destino:
+        # Si no hay departamento, usar mensaje por defecto
+        return MENSAJES_PANAMA["recogida_disponible"].format(tracking=tracking)
+    
+    depto_key = depto_destino.lower().strip()
+    
+    if depto_key in OFICINAS_PANAMA:
+        oficina = OFICINAS_PANAMA[depto_key]
+        
+        if oficina["direccion"] == "Consultar disponibilidad por teléfono":
+            return (
+                f"📞 *Para recoger tu paquete en {depto_destino.title()}*\n\n"
+                f"Debido a la ubicación de tu envío, necesitas contactarnos para coordinar la recogida:\n\n"
+                f"📞 *Teléfono:* {oficina['telefono']}\n"
+                f"🕒 *Horarios:* {oficina['horarios']}\n\n"
+                f"📋 *Información que debes proporcionar:*\n"
+                f"• Tu nombre completo\n"
+                f"• Cédula de identidad\n"
+                f"• Número de guía: {tracking}\n\n"
+                f"Nuestros agentes te indicarán el punto de recogida más cercano.\n\n"
+                f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+            )
+        else:
+            return (
+                f"🏢 *¡Excelente! Puedes recoger tu paquete en {depto_destino.title()}.*\n\n"
+                f"📍 *Dirección:* {oficina['direccion']}\n"
+                f"🕒 *Horarios:*\n{oficina['horarios']}\n"
+                f"📞 *Teléfono:* {oficina['telefono']}\n\n"
+                f"📋 *Qué debes llevar:*\n"
+                f"• Cédula de identidad\n"
+                f"• Número de guía: {tracking}\n\n"
+                f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+            )
+    else:
+        # Mensaje por defecto si no se encuentra el departamento
+        return MENSAJES_PANAMA["recogida_disponible"].format(tracking=tracking)
 
