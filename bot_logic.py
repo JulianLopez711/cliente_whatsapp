@@ -302,7 +302,6 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             
             if pais_guardado == "panama":
                 # Obtener datos del tracking para conseguir el departamento de destino
-                from tracking_data import consultar_estado
                 datos_tracking = consultar_estado(tracking_code)
                 depto_destino = None
                 
