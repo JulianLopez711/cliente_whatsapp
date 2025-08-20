@@ -39,7 +39,8 @@ from messages import (
     MENSAJE_ERROR_GENERAL,
     ESTADOS_TRADUCIDOS,
     get_mensajes_pais,
-    get_mensaje_recogida_panama
+    get_mensaje_recogida_panama,
+    get_mensaje_recogida_por_pais
 )
 from helpers import get_or_create_usuario, registrar_mensaje, crear_caso, crear_o_actualizar_tracking, crear_ticket_central
 from drive import subir_a_drive
@@ -109,13 +110,6 @@ def get_mensaje_devolucion_por_pais(pais):
     """
     mensajes_pais = get_mensajes_pais(pais)
     return mensajes_pais["devolucion"]
-
-def get_mensaje_recogida_por_pais(pais, tracking_code):
-    """
-    Obtiene el mensaje de recogida específico del país
-    """
-    mensajes_pais = get_mensajes_pais(pais)
-    return mensajes_pais["recogida_disponible"].format(tracking=tracking_code)
 
 def es_saludo(mensaje):
     texto = mensaje.lower()

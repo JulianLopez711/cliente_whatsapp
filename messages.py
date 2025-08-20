@@ -364,23 +364,31 @@ MENSAJES_PANAMA = {
     "bienvenida": "👋 ¡Hola! Bienvenido a X-Cargo Panamá.\nEstamos aquí para ayudarte.",
     "devolucion": (
         "🔄 *Atención a devoluciones - Panamá*\n\n"
-        "Para ayudarte con una devolución, comunícate con nuestros canales oficiales:\n\n"
-        "👥 WhatsApp: *+507 6XXX-XXXX*\n"
-        "✉️ Correo: *panama@x-cargo.co*\n\n"
-        "🕒 *Horarios de atención:*\n"
+        "Para procesar tu devolución, visita nuestra oficina principal:\n\n"
+        "� *Dirección:* PARQUE LEFEVRE, CALLE 14, GALERA 103- PANAMÁ\n"
+        "🕒 *Horarios:*\n"
         "Lun a Vie: 8:00am – 5:00pm\n"
-        "Sáb: 8:00am – 12:00pm\n\n"
+        "Sáb: 8:00am – 12:00pm\n"
+        "📞 *Teléfono:* +507-675-73416\n"
+        "✉️ *Correo:* panama@x-cargo.co\n\n"
+        "� *Qué debes llevar:*\n"
+        "• Cédula de identidad\n"
+        "• Número de guía del paquete\n"
+        "• Motivo de la devolución\n\n"
+        "📌 *Nota:* Si necesitas realizar la devolución en otra ubicación más cercana a ti, contacta al teléfono indicado para conocer otras sedes disponibles.\n\n"
         "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
     ),
     "recogida_disponible": (
-        "🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina.*\n\n"
-        "📍 *Dirección:* Vía España, Plaza Nueva York, Local XX, Ciudad de Panamá\n"
+        "🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina principal.*\n\n"
+        "📍 *Dirección:* PARQUE LEFEVRE, CALLE 14, GALERA 103- PANAMÁ\n"
         "🕒 *Horarios:*\n"
         "Lun a Vie: 8:00am – 5:00pm\n"
-        "Sáb: 8:00am – 12:00pm\n\n"
+        "Sáb: 8:00am – 12:00pm\n"
+        "📞 *Teléfono:* +507-675-73416\n\n"
         "📋 *Qué debes llevar:*\n"
         "• Cédula de identidad\n"
         "• Número de guía: {tracking}\n\n"
+        "📌 *Nota:* Si necesitas recoger en otra ubicación más cercana a ti, contacta al teléfono indicado para conocer otras sedes disponibles.\n\n"
         "❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
     ),
     "tiempo_respuesta": "10 días hábiles",
@@ -398,13 +406,108 @@ def get_mensajes_pais(pais):
         # Por defecto Colombia
         return MENSAJES_COLOMBIA
 
+def get_mensaje_recogida_por_pais(pais, tracking_code, depto_destino=None):
+    """
+    Obtiene el mensaje de recogida específico del país, 
+    usando el diccionario de oficinas cuando aplique
+    """
+    if pais and pais.lower() == "panama":
+        # Para Panamá, usar la función que considera el departamento
+        return get_mensaje_recogida_panama(depto_destino, tracking_code)
+    else:
+        # Para Colombia, usar el mensaje estático
+        mensajes_pais = get_mensajes_pais(pais)
+        return mensajes_pais["recogida_disponible"].format(tracking=tracking_code)
+
+def get_mensaje_devolucion_por_pais(pais, depto_destino=None):
+    """
+    Obtiene el mensaje de devolución específico del país, 
+    usando el diccionario de oficinas cuando aplique
+    """
+    if pais and pais.lower() == "panama":
+        # Para Panamá, usar la función que considera el departamento
+        return get_mensaje_devolucion_panama(depto_destino)
+    else:
+        # Para Colombia, usar el mensaje estático
+        mensajes_pais = get_mensajes_pais(pais)
+        return mensajes_pais["devolucion"]
+
+def get_mensaje_devolucion_panama(depto_destino):
+    """
+    Genera el mensaje de devolución específico según el departamento de Panamá
+    """
+    # Si no hay departamento específico, usar oficina principal de Panamá
+    if not depto_destino:
+        oficina_principal = OFICINAS_PANAMA["Panama"]
+        return (
+            f"🔄 *Atención a devoluciones - Panamá*\n\n"
+            f"Para procesar tu devolución, visita nuestra oficina principal:\n\n"
+            f"📍 *Dirección:* {oficina_principal['direccion']}\n"
+            f"🕒 *Horarios:*\n{oficina_principal['horarios']}\n"
+            f"📞 *Teléfono:* {oficina_principal['telefono']}\n"
+            f"✉️ *Correo:* panama@x-cargo.co\n\n"
+            f"📋 *Qué debes llevar:*\n"
+            f"• Cédula de identidad\n"
+            f"• Número de guía del paquete\n"
+            f"• Motivo de la devolución\n\n"
+            f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+        )
+    
+    # Normalizar el nombre del departamento para buscar en el diccionario
+    depto_normalizado = depto_destino.strip().title()
+    
+    # Mapeo especial para casos particulares
+    mapeo_departamentos = {
+        "Panama Oeste": "Panama Oeste",
+        "Bocas Del Toro": "Bocas Del Toro", 
+        "Comarca Ngobe Bugle": "Comarca Ngobe Bugle",
+        "Los Santos": "Los Santos"
+    }
+    
+    # Buscar el departamento, primero en mapeo especial, luego normalizado
+    depto_key = mapeo_departamentos.get(depto_normalizado, depto_normalizado)
+    
+    if depto_key in OFICINAS_PANAMA:
+        oficina = OFICINAS_PANAMA[depto_key]
+        
+        return (
+            f"🔄 *Atención a devoluciones - {depto_destino.title()}*\n\n"
+            f"Para procesar tu devolución, visita nuestra oficina en {depto_destino.title()}:\n\n"
+            f"📍 *Dirección:* {oficina['direccion']}\n"
+            f"🕒 *Horarios:*\n{oficina['horarios']}\n"
+            f"📞 *Teléfono:* {oficina['telefono']}\n"
+            f"✉️ *Correo:* panama@x-cargo.co\n\n"
+            f"📋 *Qué debes llevar:*\n"
+            f"• Cédula de identidad\n"
+            f"• Número de guía del paquete\n"
+            f"• Motivo de la devolución\n\n"
+            f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+        )
+    else:
+        # Si no se encuentra el departamento específico, usar oficina principal de Panamá
+        oficina_principal = OFICINAS_PANAMA["Panama"]
+        return (
+            f"🔄 *Atención a devoluciones - Panamá*\n\n"
+            f"Para procesar tu devolución, visita nuestra oficina principal:\n\n"
+            f"📍 *Dirección:* {oficina_principal['direccion']}\n"
+            f"🕒 *Horarios:*\n{oficina_principal['horarios']}\n"
+            f"📞 *Teléfono:* {oficina_principal['telefono']}\n"
+            f"✉️ *Correo:* panama@x-cargo.co\n\n"
+            f"📋 *Qué debes llevar:*\n"
+            f"• Cédula de identidad\n"
+            f"• Número de guía del paquete\n"
+            f"• Motivo de la devolución\n\n"
+            f"📌 *Nota:* Si esta ubicación te queda lejos, contacta al teléfono indicado para conocer otras opciones.\n\n"
+            f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
+        )
+
 def get_mensaje_recogida_panama(depto_destino, tracking):
     """
     Genera el mensaje de recogida específico según el departamento de Panamá
     """
     # Si no hay departamento específico, usar oficina principal de Panamá
     if not depto_destino:
-        oficina_principal = OFICINAS_PANAMA["panama"]
+        oficina_principal = OFICINAS_PANAMA["Panama"]
         return (
             f"🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina principal.*\n\n"
             f"📍 *Dirección:* {oficina_principal['direccion']}\n"
@@ -416,7 +519,19 @@ def get_mensaje_recogida_panama(depto_destino, tracking):
             f"❓ ¿Te puedo ayudar en algo más?\n1️⃣ Sí, volver al menú principal\n2️⃣ No, finalizar conversación"
         )
     
-    depto_key = depto_destino.lower().strip()
+    # Normalizar el nombre del departamento para buscar en el diccionario
+    depto_normalizado = depto_destino.strip().title()
+    
+    # Mapeo especial para casos particulares
+    mapeo_departamentos = {
+        "Panama Oeste": "Panama Oeste",
+        "Bocas Del Toro": "Bocas Del Toro", 
+        "Comarca Ngobe Bugle": "Comarca Ngobe Bugle",
+        "Los Santos": "Los Santos"
+    }
+    
+    # Buscar el departamento, primero en mapeo especial, luego normalizado
+    depto_key = mapeo_departamentos.get(depto_normalizado, depto_normalizado)
     
     if depto_key in OFICINAS_PANAMA:
         oficina = OFICINAS_PANAMA[depto_key]
@@ -447,7 +562,7 @@ def get_mensaje_recogida_panama(depto_destino, tracking):
             )
     else:
         # Si no se encuentra el departamento específico, usar oficina principal de Panamá
-        oficina_principal = OFICINAS_PANAMA["panama"]
+        oficina_principal = OFICINAS_PANAMA["Panama"]
         return (
             f"🏢 *¡Excelente! Puedes recoger tu paquete en nuestra oficina principal.*\n\n"
             f"📍 *Dirección:* {oficina_principal['direccion']}\n"
