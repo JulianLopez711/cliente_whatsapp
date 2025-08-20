@@ -302,57 +302,57 @@ MENSAJES_COLOMBIA = {
 
 # Información de oficinas por departamento en Panamá
 OFICINAS_PANAMA = {
-    "colon": {
+    "Colon": {
         "direccion": "Calle primera melendez multi 9 17 b Colón",
         "horarios": "Lun a Vie: 8:00am – 4:00pm\nSáb: 8:00am – 12:00pm",
         "telefono": "+507-698-97486"
     },
-    "veraguas": {
+    "Veraguas": {
         "direccion": "Plaza kevin las palmeras local 3",
         "horarios": "Lun a Vie: 8:00am – 4:00pm\nSáb: 8:00am – 11:00am",
         "telefono": "+507-764-739746"
     },
-    "los santos": {
+    "Los Santos": {
         "direccion": "La arena de Chitre casa B2-67  ",
         "horarios": "Lun a Vie: 8:00am – 4:00pm",
         "telefono": "+507-679-89432"
     },
-    "comarca ngobe bugle": {
+    "Comarca Ngobe Bugle": {
         "direccion": "Darién, entrando por santa fe, después del hotel guacamaya, frente a la iglesia bautista.Local Compucell",
         "horarios": "Contactar para coordinar",
         "telefono": "+507-617-58530"
     },
-    "cocle": {
+    "Cocle": {
         "direccion": "La angostura Penonome vía la pintada",
         "horarios": "Lun a Vie: 8:00am – 4:00pm",
         "telefono": "+507-635-91486"
     },
-    "herrera": {
+    "Herrera": {
         "direccion": "La arena de Chitre casa B2-67 ",
         "horarios": "Lun a Vie: 8:00am – 4:00pm",
         "telefono": "+507-679-89432"
     },
-    "darien": {
+    "Darien": {
         "direccion": "Darién, entrando por santa fe, después del hotel guacamaya, frente a la iglesia bautista.Local Compucell",
         "horarios": "Contactar para coordinar",
         "telefono": "+507-617-58530"
     },
-    "panama oeste": {
+    "Panama Oeste": {
         "direccion": "La Chorrera Urb. Quintas del Pacífico, Cll4, L38",
         "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
         "telefono": "+507-675-73416"
     },
-    "bocas del toro": {
+    "Bocas Del Toro": {
         "direccion": "Av, 17 de abril. Finca 12, Changuinola, Bocas del toro",
         "horarios": "Lun a Vie: 8:00am – 4:00pm",
         "telefono": "+507-691-92027"
     },
-    "chiriqui": {
+    "Chiriqui": {
         "direccion": " David, Villa Patricia, Primera entrada mano izquiera, luego mano izquiera, despues mano derecha, casa 80",
         "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
         "telefono": "+507-675-73416"
     },
-    "panama": {
+    "Panama": {
         "direccion": "PARQUE LEFEVRE, CALLE 14, GALERA 103- PANAMÁ",
         "horarios": "Lun a Vie: 8:00am – 5:00pm\nSáb: 8:00am – 12:00pm",
         "telefono": "+507-675-73416"
