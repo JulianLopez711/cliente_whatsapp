@@ -224,7 +224,7 @@ def asignar_agente_aleatorio(cola_id=1):
         print(f"⚠️ No hay agentes disponibles para cola {cola_id}, asignando None")
         return None
 
-def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telefono=None, tracking_code=None, tipo_caso=None, prioridad="media"):
+def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telefono=None, tracking_code=None, tipo_caso=None, prioridad="media", imagen_url=None):
     """
     Crea un ticket en la base de datos central de tickets
     Asigna automáticamente a la cola de Servicio al Cliente según el país:
@@ -297,9 +297,16 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
         
         descripcion_completa += f"""
 
-�📌 *Detalles del caso:*
+📌 *Detalles del caso:*
 • Tipo de caso: {tipo_caso or 'No especificado'}
-• 📝 Descripción del cliente: {descripcion or 'Sin descripción'}
+• 📝 Descripción del cliente: {descripcion or 'Sin descripción'}"""
+
+        # Agregar URL de la imagen si existe
+        if imagen_url:
+            descripcion_completa += f"""
+• 🖼️ Evidencia adjunta: {imagen_url}"""
+
+        descripcion_completa += f"""
 
 📱 Canal: WhatsApp Bot Automático
 🤖 Generado automáticamente por el sistema

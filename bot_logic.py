@@ -467,7 +467,8 @@ def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url
             usuario_telefono=usuario.numero,
             tracking_code=tracking_code,
             tipo_caso=tipo_caso,
-            prioridad=prioridad
+            prioridad=prioridad,
+            imagen_url=drive_url
         )
 
         print(f"✅ Correo enviado y ticket creado para caso: {tipo_caso} - {tracking_code}")
