@@ -169,6 +169,9 @@ def obtener_estado_legible(codigo_estado, descripcion_estado=""):
 def procesar_mensaje(numero, mensaje, imagen_guardada=None):
     estado = get_estado(numero)
     mensaje = mensaje.strip()
+    
+    # 🔍 Log de depuración
+    print(f"📱 {numero} | Estado: {estado} | Mensaje: {mensaje}")
 
     usuario = get_or_create_usuario(numero)
     registrar_mensaje(usuario.id, mensaje, tipo="entrada")
@@ -184,6 +187,9 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
     elif estado == "PEDIR_NOMBRE":
         nombre = mensaje.title()
         set_nombre(numero, nombre)
+        
+        # Log de confirmación
+        print(f"✅ Nombre guardado: {nombre} para {numero}")
         
         # Actualizar el usuario en la base de datos con el nombre
         usuario = get_or_create_usuario(numero, nombre)

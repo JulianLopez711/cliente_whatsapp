@@ -1,50 +1,177 @@
-from collections import defaultdict
+import json
+from db import SessionLocal, Sesion
+from sqlalchemy.exc import IntegrityError
 
-# Estados activos por usuario
-estados = {}
-tracking_codes = {}
-nombres = {}
-paises = {}  # ✅ NUEVO: Almacenar país del usuario
-
-# Almacenamiento temporal para info de caso
-temporales = defaultdict(dict)
+def get_or_create_sesion(numero):
+    """Obtiene o crea una sesión para el usuario"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=numero).first()
+        if not sesion:
+            sesion = Sesion(numero=numero, estado="INICIO")
+            db.add(sesion)
+            db.commit()
+            db.refresh(sesion)
+        return sesion
+    except IntegrityError:
+        db.rollback()
+        sesion = db.query(Sesion).filter_by(numero=numero).first()
+        return sesion
+    finally:
+        db.close()
 
 def get_estado(usuario):
-    return estados.get(usuario, "INICIO")
+    """Obtiene el estado actual del usuario desde la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion:
+            return sesion.estado
+        return "INICIO"
+    finally:
+        db.close()
 
 def set_estado(usuario, estado):
-    estados[usuario] = estado
+    """Actualiza el estado del usuario en la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if not sesion:
+            sesion = Sesion(numero=usuario, estado=estado)
+            db.add(sesion)
+        else:
+            sesion.estado = estado
+        db.commit()
+    finally:
+        db.close()
 
 def reset_usuario(usuario):
-    estados[usuario] = "INICIO"
-    tracking_codes.pop(usuario, None)
-    nombres.pop(usuario, None)
-    paises.pop(usuario, None)  # ✅ NUEVO: Limpiar país
-    temporales.pop(usuario, None)
+    """Resetea la sesión del usuario a estado inicial"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion:
+            sesion.estado = "INICIO"
+            sesion.tracking_code = None
+            sesion.nombre = None
+            sesion.pais = "colombia"
+            sesion.datos_temporales = None
+            db.commit()
+    finally:
+        db.close()
 
 def set_tracking(usuario, tracking):
-    tracking_codes[usuario] = tracking
+    """Guarda el tracking del usuario en la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if not sesion:
+            sesion = Sesion(numero=usuario, tracking_code=tracking)
+            db.add(sesion)
+        else:
+            sesion.tracking_code = tracking
+        db.commit()
+    finally:
+        db.close()
 
 def get_tracking(usuario):
-    return tracking_codes.get(usuario)
+    """Obtiene el tracking del usuario desde la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion:
+            return sesion.tracking_code
+        return None
+    finally:
+        db.close()
 
 def set_nombre(usuario, nombre):
-    nombres[usuario] = nombre
+    """Guarda el nombre del usuario en la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if not sesion:
+            sesion = Sesion(numero=usuario, nombre=nombre)
+            db.add(sesion)
+        else:
+            sesion.nombre = nombre
+        db.commit()
+    finally:
+        db.close()
 
 def get_nombre(usuario):
-    return nombres.get(usuario)
+    """Obtiene el nombre del usuario desde la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion:
+            return sesion.nombre
+        return None
+    finally:
+        db.close()
 
 def set_pais(usuario, pais):
-    """Guarda el país del usuario en la sesión"""
-    paises[usuario] = pais
+    """Guarda el país del usuario en la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if not sesion:
+            sesion = Sesion(numero=usuario, pais=pais)
+            db.add(sesion)
+        else:
+            sesion.pais = pais
+        db.commit()
+    finally:
+        db.close()
 
 def get_pais(usuario):
-    """Obtiene el país del usuario de la sesión"""
-    return paises.get(usuario, "colombia")  # Por defecto Colombia
+    """Obtiene el país del usuario desde la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion:
+            return sesion.pais or "colombia"
+        return "colombia"
+    finally:
+        db.close()
 
-# Variables temporales para descripción e imagen
 def set_estado_temporal(usuario, clave, valor):
-    temporales[usuario][clave] = valor
+    """Guarda datos temporales del usuario en la BD (como JSON)"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if not sesion:
+            sesion = Sesion(numero=usuario)
+            db.add(sesion)
+            db.flush()
+        
+        # Obtener datos temporales existentes o crear nuevo dict
+        datos = {}
+        if sesion.datos_temporales:
+            try:
+                datos = json.loads(sesion.datos_temporales)
+            except:
+                datos = {}
+        
+        # Actualizar con nuevo valor
+        datos[clave] = valor
+        sesion.datos_temporales = json.dumps(datos)
+        db.commit()
+    finally:
+        db.close()
 
 def get_estado_temporal(usuario, clave):
-    return temporales[usuario].get(clave)
+    """Obtiene datos temporales del usuario desde la BD"""
+    db = SessionLocal()
+    try:
+        sesion = db.query(Sesion).filter_by(numero=usuario).first()
+        if sesion and sesion.datos_temporales:
+            try:
+                datos = json.loads(sesion.datos_temporales)
+                return datos.get(clave)
+            except:
+                return None
+        return None
+    finally:
+        db.close()
+

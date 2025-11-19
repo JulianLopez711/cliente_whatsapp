@@ -84,6 +84,21 @@ class Status(Base):
     creado_en = Column(DateTime, server_default=func.now())
 
 
+# ✅ NUEVO: Modelo para sesiones de usuario (estados del bot)
+class Sesion(Base):
+    __tablename__ = "sesiones"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    numero = Column(String, unique=True, nullable=False, index=True)
+    estado = Column(String, default="INICIO")
+    tracking_code = Column(String, nullable=True)
+    nombre = Column(String, nullable=True)
+    pais = Column(String, default="colombia")
+    datos_temporales = Column(Text, nullable=True)  # JSON para almacenar datos temporales
+    actualizado_en = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    creado_en = Column(DateTime, server_default=func.now())
+
+
 # Modelo para la tabla tickets de la base de datos central
 class Ticket(Base):
     __tablename__ = "tickets"

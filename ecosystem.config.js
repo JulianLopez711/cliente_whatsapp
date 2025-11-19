@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'whatsapp-bot',
       script: 'gunicorn',
-      args: '-w 4 -b 0.0.0.0:5000 app:app --timeout 120',
+      args: '-w 4 -b 0.0.0.0:5000 app:app --timeout 120 --worker-class sync',
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
