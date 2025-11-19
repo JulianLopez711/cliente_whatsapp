@@ -239,6 +239,16 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             return MENSAJE_TRACKING_INVALIDO
 
     elif estado == "MENU_PRINCIPAL":
+        # Validar que sea un número entre 1 y 3
+        if not mensaje.isdigit() or mensaje not in ["1", "2", "3"]:
+            nombre = get_nombre(numero) or ""
+            return (
+                f"{nombre}, por favor selecciona una opción válida:\n\n"
+                "1️⃣ Tengo una novedad con una entrega\n"
+                "2️⃣ Tengo una novedad con una devolución\n"
+                "3️⃣ Consultar estado de mi guía"
+            )
+        
         if mensaje == "1":
             set_estado(numero, "MENU_ENTREGA")
             return MENSAJE_MENU_ENTREGA
@@ -276,9 +286,27 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
                     "📦 Ingresa nuevamente tu número de guía para continuar."
                 )
         else:
-            return MENSAJE_OPCION_INVALIDA
+            nombre = get_nombre(numero) or ""
+            return (
+                f"{nombre}, opción no válida. Por favor selecciona:\n\n"
+                "1️⃣ Tengo una novedad con una entrega\n"
+                "2️⃣ Tengo una novedad con una devolución\n"
+                "3️⃣ Consultar estado de mi guía"
+            )
 
     elif estado == "MENU_ENTREGA":
+        # Validar que sea un número válido
+        if not mensaje.isdigit() or mensaje not in ["1", "2", "3", "4", "5", "6"]:
+            return (
+                "Por favor selecciona una opción válida del menú:\n\n"
+                "1️⃣ Mi pedido no fue entregado\n"
+                "2️⃣ Deseo cambiar datos de entrega\n"
+                "3️⃣ Deseo recoger mi pedido\n"
+                "4️⃣ Reportar mala atención\n"
+                "5️⃣ Cobro que no reconozco\n"
+                "6️⃣ Pedido incompleto o dañado"
+            )
+        
         tracking_code = get_tracking(numero)
         datos = consultar_estado(tracking_code)
         if not datos:
@@ -389,6 +417,15 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
         return MENSAJE_CASO_CONFIRMADO
 
     elif estado == "PREGUNTA_CONTINUAR":
+        # Validar que sea 1 o 2
+        if not mensaje.isdigit() or mensaje not in ["1", "2"]:
+            nombre = get_nombre(numero) or ""
+            return (
+                f"{nombre}, por favor selecciona:\n\n"
+                "1️⃣ Sí, volver al menú principal\n"
+                "2️⃣ No, finalizar conversación"
+            )
+        
         if mensaje == "1":
             set_estado(numero, "MENU_PRINCIPAL")
             return MENSAJE_VOLVER_MENU
@@ -396,10 +433,17 @@ def procesar_mensaje(numero, mensaje, imagen_guardada=None):
             reset_usuario(numero)
             return MENSAJE_CONVERSACION_FINALIZADA
         else:
-            return MENSAJE_OPCION_CONTINUAR_INVALIDA
+            nombre = get_nombre(numero) or ""
+            return (
+                f"{nombre}, por favor selecciona:\n\n"
+                "1️⃣ Sí, volver al menú principal\n"
+                "2️⃣ No, finalizar conversación"
+            )
 
     else:
-        return MENSAJE_ERROR_GENERAL
+        # Estado no reconocido - reiniciar conversación
+        reset_usuario(numero)
+        return "⚠️ Hubo un problema con tu sesión. Por favor, escribe 'hola' para comenzar de nuevo."
 
 def enviar_correo_caso(usuario, tracking_code, tipo_caso, descripcion, drive_url=None, imagen_guardada=None, datos_tracking=None):
     """
