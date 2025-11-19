@@ -7,7 +7,10 @@ pm2 delete whatsapp-bot 2>/dev/null || true
 echo "📁 Creando directorio de logs si no existe..."
 mkdir -p logs
 
-echo "🚀 Iniciando whatsapp-bot con PM2..."
+echo "📦 Instalando/actualizando dependencias..."
+pip3 install -r requirements.txt --quiet
+
+echo "🚀 Iniciando whatsapp-bot con Gunicorn y PM2..."
 pm2 start ecosystem.config.js
 
 echo "✅ Proceso iniciado. Mostrando estado..."
@@ -22,3 +25,6 @@ echo "   pm2 status"
 echo ""
 echo "🛑 Para detener:"
 echo "   pm2 stop whatsapp-bot"
+echo ""
+echo "💾 Para guardar la configuración PM2:"
+echo "   pm2 save"

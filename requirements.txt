@@ -10,3 +10,4 @@ Pillow
 sqlalchemy
 psycopg2-binary
 google-cloud-bigquery
+gunicorn
