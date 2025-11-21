@@ -342,7 +342,7 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
             """), {
                 'asunto': asunto,
                 'descripcion': descripcion_completa,
-                'estado': 'abierto',
+                'estado': 'Abierto',
                 'prioridad': prioridad,
                 'canal': 'whatsapp',
                 'cola_id': COLA_ID,
@@ -360,7 +360,7 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
             print(f"   Cola: {NOMBRE_COLA} (ID: {ticket_info[2]})")
             print(f"   Agente: ID {ticket_info[3]}")
             print(f"   Solicitante: selfx@x-cargo.co (ID: {ticket_info[4]})")
-            print(f"   Estado: abierto")
+            print(f"   Estado: Abierto")
             print(f"   Prioridad: {prioridad}")
             print(f"   País: {pais.title()}")
             
@@ -372,7 +372,7 @@ def crear_ticket_central(asunto, descripcion, usuario_nombre=None, usuario_telef
                     self.cola_id = cola_id
                     self.agente_id = agente_id
                     self.solicitante_id = solicitante_id
-                    self.estado = "abierto"
+                    self.estado = "Abierto"
                     self.prioridad = prioridad
                     self.canal = "whatsapp"
             

@@ -68,7 +68,7 @@ class Caso(Base):
     tipo = Column(String)
     descripcion = Column(Text)
     telefono = Column(String)
-    estado = Column(String, default="abierto")
+    estado = Column(String, default="Abierto")
     fecha_creado = Column(DateTime, server_default=func.now())
     imagen_url = Column(String)  # ✅ NUEVO CAMPO
 
@@ -106,7 +106,7 @@ class Ticket(Base):
     id = Column(Integer, primary_key=True, index=True)
     asunto = Column(Text, nullable=False)
     descripcion = Column(Text)
-    estado = Column(Text, nullable=False, default="abierto")
+    estado = Column(Text, nullable=False, default="Abierto")
     prioridad = Column(Text, nullable=False, default="media")
     fecha_creacion = Column(DateTime, server_default=func.now())
     fecha_actualizacion = Column(DateTime, server_default=func.now())
