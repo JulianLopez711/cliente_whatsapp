@@ -9,12 +9,28 @@ load_dotenv()
 DATABASE_URL = os.getenv("DATABASE_URL")
 TICKETS_DATABASE_URL = os.getenv("TICKETS_DATABASE_URL", DATABASE_URL)  # URL de la base de datos central de tickets
 
+# Configuración optimizada del pool de conexiones
+ENGINE_OPTS = {
+    "pool_size": 10,
+    "max_overflow": 20,
+    "pool_timeout": 30,
+    "pool_recycle": 1800,  # Reciclar conexiones cada 30 minutos
+    "pool_pre_ping": True,  # Verificar conexiones antes de usar
+    "connect_args": {
+        "connect_timeout": 10,
+        "keepalives": 1,
+        "keepalives_idle": 30,
+        "keepalives_interval": 10,
+        "keepalives_count": 5
+    }
+}
+
 # Conexión principal
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, **ENGINE_OPTS)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 # Conexión para la base de datos central de tickets
-tickets_engine = create_engine(TICKETS_DATABASE_URL)
+tickets_engine = create_engine(TICKETS_DATABASE_URL, **ENGINE_OPTS)
 TicketsSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=tickets_engine)
 
 Base = declarative_base()
