@@ -2,8 +2,8 @@ module.exports = {
   apps: [
     {
       name: 'whatsapp-bot',
-      script: 'gunicorn',
-      args: '-w 4 -b 0.0.0.0:5000 app:app --timeout 300 --graceful-timeout 300 --worker-class gthread --threads 2 --keep-alive 5',
+      script: '/usr/bin/python3',
+      args: '-m gunicorn -w 4 -b 0.0.0.0:5000 app:app --timeout 300 --graceful-timeout 300 --worker-class gthread --threads 2 --keep-alive 5',
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
