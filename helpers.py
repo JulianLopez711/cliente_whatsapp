@@ -1,4 +1,4 @@
-from db import SessionLocal, Usuario, Mensaje, Caso, Tracking, Ticket, TicketsSessionLocal
+from db import SessionLocal, Usuario, Mensaje, Caso, Tracking, Ticket, TicketsSessionLocal, Sesion
 from sqlalchemy.exc import IntegrityError
 import random
 from tracking_data import consultar_estado
