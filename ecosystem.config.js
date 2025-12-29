@@ -25,7 +25,7 @@ module.exports = {
     {
       name: 'ngrok-tunnel',
       script: 'ngrok',
-      args: 'http 5000 --domain=boot5000.ngrok.app',
+      args: 'http 5000 --domain=boot5000.ngrok.app --authtoken=32nHBmeLWooXcnm0B39fq9gJrST_5aARRKw7H1EkrJTtgCGAc',
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
