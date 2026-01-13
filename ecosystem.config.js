@@ -21,6 +21,27 @@ module.exports = {
       min_uptime: '10s',
       max_restarts: 10,
       restart_delay: 4000
+    },
+    {
+      name: 'ngrok-tunnel',
+      script: '/usr/local/bin/ngrok',
+      args: 'http 5000 --domain=boot5000.ngrok.app --authtoken=32nHBmeLWooXcnm0B39fq9gJrST_5aARRKw7H1EkrJTtgCGAc',
+      interpreter: 'none',
+      instances: 1,
+      exec_mode: 'fork',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '200M',
+      env: {
+        NODE_ENV: 'production'
+      },
+      error_file: './logs/ngrok-error.log',
+      out_file: './logs/ngrok-out.log',
+      log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
+      merge_logs: true,
+      min_uptime: '10s',
+      max_restarts: 5,
+      restart_delay: 3000
     }
   ]
 };
