@@ -14,12 +14,18 @@ def descargar_imagen(media_url, content_type, nombre_archivo):
         return None
 
     try:
+        # Crear directorio evidencias si no existe
+        os.makedirs("evidencias", exist_ok=True)
+        
+        # Guardar en directorio evidencias
+        ruta_completa = os.path.join("evidencias", nombre_archivo)
+        
         response = requests.get(media_url, auth=HTTPBasicAuth(sid, token))
         if response.status_code == 200:
-            with open(nombre_archivo, "wb") as f:
+            with open(ruta_completa, "wb") as f:
                 f.write(response.content)
-            print(f"✅ Imagen guardada como {nombre_archivo}")
-            return nombre_archivo
+            print(f"✅ Imagen guardada como {ruta_completa}")
+            return ruta_completa
         else:
             print(f"❌ Error al descargar imagen: {response.status_code}")
             return None
