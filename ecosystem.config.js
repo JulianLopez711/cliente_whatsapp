@@ -24,13 +24,14 @@ module.exports = {
     },
     {
       name: 'ngrok-tunnel',
-      script: '/usr/bin/ngrok',
-      args: 'http 5000 --domain=boot5000.ngrok.app --authtoken=32nHBmeLWooXcnm0B39fq9gJrST_5aARRKw7H1EkrJTtgCGAc',
+      script: 'ngrok',
+      args: 'http 5000 --domain=boot5000.ngrok.app --authtoken=32nHBmeLWooXcnm0B39fq9gJrST_5aARRKw7H1EkrJTtgCGAc --log=stdout',
       interpreter: 'none',
       instances: 1,
       exec_mode: 'fork',
       autorestart: true,
       watch: false,
+      cwd: '/home/devxcargo/cliente_whatsapp',
       max_memory_restart: '200M',
       env: {
         NODE_ENV: 'production'
